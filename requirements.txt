@@ -1,0 +1,11 @@
+chromadb
+sentence-transformers
+rank-bm25
+scikit-learn
+numpy
+pandas
+nltk
+ollama
+torch
+transformers
+accelerate
