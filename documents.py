@@ -13,6 +13,7 @@ import streamlit as st
 import pandas as pd
 
 FILE_PATH = "egyptian_greek_myths.xlsx"
+
 REQUIRED_COLUMNS = [
     "ID", "Name", "Civilization", "Role", "Myth", "Historically Accurate?"
 ]
@@ -51,11 +52,12 @@ def load_documents():
                 "text": text.strip(),
             }
         )
-
     return rows
 
 
 documents = load_documents()
+
+character_aliases = {}
 
 
 if __name__ == "__main__":
