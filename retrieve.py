@@ -10,6 +10,17 @@ Original file is located at
 """
 
 import re
+import numpy as np
+from rank_bm25 import BM25Okapi
+
+from embedding import model
+from chroma_store import collection
+from chunking import chunks
+from preprocessing import (
+    preprocess_for_bm25,
+    preprocess_for_embedding,
+)
+from import_dou import documents, character_aliases
 
 # ---------------------------------
 # Detect comparison questions
@@ -131,11 +142,6 @@ def build_context(question):
 
     return context.strip(), selected_documents
 
-import numpy as np
-from rank_bm25 import BM25Okapi
-from sklearn.metrics.pairwise import cosine_similarity
-
-
 # ---------------------------------
 # Prepare BM25
 # ---------------------------------
@@ -147,23 +153,20 @@ tokenized_chunks = [
 
 bm25 = BM25Okapi(tokenized_chunks)
 
-
 # ---------------------------------
 # Normalize Scores
 # ---------------------------------
 
 def min_max_normalize(scores):
-
     scores = np.asarray(scores, dtype=float)
+
+    if len(scores) == 0:
+        return scores
 
     if scores.max() == scores.min():
         return np.zeros_like(scores)
 
-    return (scores - scores.min()) / (scores.max() - scores.min())
-
-
-
-# ---------------------------------
+    return (scores - scores.min()) / (scores.max() - scores.min())# ---------------------------------
 # Hybrid Search
 # ---------------------------------
 
