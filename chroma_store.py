@@ -8,11 +8,12 @@ Original file is located at
 
 ## chroma store
 """
-
 from pathlib import Path
-
 import chromadb
 from chromadb.config import Settings
+
+from chunking import build_chunks
+from embedding import chunk_embeddings
 
 # -------------------------
 # Configuration
@@ -20,11 +21,13 @@ from chromadb.config import Settings
 DB_PATH = Path("chroma_db")
 COLLECTION_NAME = "egyptian_greek_myths"
 
+chunks = build_chunks()
+
+
 # -------------------------
 # Create Vector Store
 # -------------------------
 def create_vector_store():
-
     client = chromadb.PersistentClient(
         path=str(DB_PATH),
         settings=Settings(anonymized_telemetry=False),
@@ -32,16 +35,17 @@ def create_vector_store():
 
     try:
         client.delete_collection(COLLECTION_NAME)
-    except:
+    except Exception:
         pass
 
-    collection = client.create_collection(COLLECTION_NAME)
+    collection = client.create_collection(
+        COLLECTION_NAME,
+        metadata={"hnsw:space": "cosine"},
+    )
 
     collection.add(
         ids=[chunk["chunk_id"] for chunk in chunks],
-
         documents=[chunk["chunk_text"] for chunk in chunks],
-
         metadatas=[
             {
                 "document_id": chunk["document_id"],
@@ -50,12 +54,10 @@ def create_vector_store():
             }
             for chunk in chunks
         ],
-
         embeddings=chunk_embeddings.tolist(),
     )
 
     print(f"Stored {collection.count()} chunks.")
-
     return collection
 
 
