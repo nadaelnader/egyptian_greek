@@ -9,66 +9,47 @@ Original file is located at
 #Model
 """
 
-from openai import OpenAI
 import streamlit as st
+from openai import OpenAI
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=st.secrets["OPENROUTER_API_KEY"]
-)
+from retrieve import build_context
+from prompting import build_prompt, SYSTEM_PROMPT
 
-question = "Who tricked death twice?"
 
-context, _ = build_context(question)
-prompt = build_prompt(question, context)
+@st.cache_resource
+def get_client():
+    if "OPENROUTER_API_KEY" not in st.secrets:
+        st.error(
+            "OPENROUTER_API_KEY not found in Secrets. "
+            "Add it under Manage app -> Settings -> Secrets."
+        )
+        st.stop()
 
-print("========== PROMPT ==========")
-print(prompt)
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=st.secrets["OPENROUTER_API_KEY"],
+    )
 
-response = client.chat.completions.create(
-    model="qwen/qwen-2.5-7b-instruct",
-    messages=[
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-    temperature=0,
-    top_p=0.1,
-)
 
-print("\n========== MODEL RESPONSE ==========")
-print(response.choices[0].message.content)
+def ask_model(question):
+    client = get_client()
 
-# ====================================================
+    context, sources = build_context(question)
+    prompt = build_prompt(question, context)
 
-question = "Who were the parents of Osiris?"
+    response = client.chat.completions.create(
+        model="qwen/qwen-2.5-7b-instruct",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0,
+        top_p=0.1,
+    )
 
-context, _ = build_context(question)
-prompt = build_prompt(question, context)
+    return response.choices[0].message.content, sources
 
-print("========== PROMPT ==========")
-print(prompt)
 
-response = client.chat.completions.create(
-    model="qwen/qwen-2.5-7b-instruct",
-    messages=[
-        {
-            "role": "system",
-            "content": SYSTEM_PROMPT
-        },
-        {
-            "role": "user",
-            "content": prompt
-        }
-    ],
-    temperature=0,
-    top_p=0.1,
-)
-
-print("\n========== MODEL RESPONSE ==========")
-print(response.choices[0].message.content)
+if __name__ == "__main__":
+    answer, sources = ask_model("Who tricked death twice?")
+    print(answer)
