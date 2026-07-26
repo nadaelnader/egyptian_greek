@@ -9,13 +9,15 @@ Original file is located at
 ## Embedding
 """
 
+import streamlit as st
 import numpy as np
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from chunking import build_chunks
-from preprocessing import preprocess_for_bm25,preprocess_for_embeddingchunks 
+from preprocessing import preprocess_for_bm25, preprocess_for_embedding
+
 chunks = build_chunks()
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
@@ -28,41 +30,38 @@ tokenized_chunks = [
     preprocess_for_bm25(chunk["chunk_text"]).split()
     for chunk in chunks
 ]
-
 bm25 = BM25Okapi(tokenized_chunks)
 
 # ---------------------------------
 # Embedding Model
 # ---------------------------------
-print("Loading embedding model...")
+@st.cache_resource
+def load_model():
+    return SentenceTransformer(MODEL_NAME)
 
-model = SentenceTransformer(MODEL_NAME)
 
-print("Encoding chunks...")
+@st.cache_resource
+def encode_chunks(_chunks):
+    model = load_model()
+    return model.encode(
+        [preprocess_for_embedding(chunk["chunk_text"]) for chunk in _chunks],
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+    )
 
-chunk_embeddings = model.encode(
-    [
-        preprocess_for_embedding(chunk["chunk_text"])
-        for chunk in chunks
-    ],
-    convert_to_numpy=True,
-    normalize_embeddings=True,
-    show_progress_bar=True,
-)
 
-print(f"Total embeddings: {len(chunk_embeddings)}")
+model = load_model()
+chunk_embeddings = encode_chunks(chunks)
 
 
 # ---------------------------------
 # Normalize Scores
 # ---------------------------------
 def min_max_normalize(scores):
-
     scores = np.asarray(scores, dtype=float)
-
     if scores.max() == scores.min():
         return np.zeros_like(scores)
-
     return (scores - scores.min()) / (scores.max() - scores.min())
 
 
@@ -70,15 +69,11 @@ def min_max_normalize(scores):
 # Hybrid Search
 # ---------------------------------
 def hybrid_search(query, k=3):
-
     bm25_query = preprocess_for_bm25(query)
-
     embedding_query = preprocess_for_embedding(query)
 
     # BM25
-    bm25_scores = bm25.get_scores(
-        bm25_query.split()
-    )
+    bm25_scores = bm25.get_scores(bm25_query.split())
 
     # Embedding
     query_embedding = model.encode(
@@ -86,7 +81,6 @@ def hybrid_search(query, k=3):
         convert_to_numpy=True,
         normalize_embeddings=True,
     )
-
     embedding_scores = cosine_similarity(
         query_embedding,
         chunk_embeddings
@@ -101,13 +95,9 @@ def hybrid_search(query, k=3):
     ranking = np.argsort(hybrid_scores)[::-1][:k]
 
     results = []
-
     for idx in ranking:
-
         result = chunks[idx].copy()
-
         result["score"] = float(hybrid_scores[idx])
-
         results.append(result)
 
     return results
