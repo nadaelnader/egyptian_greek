@@ -20,10 +20,12 @@ from preprocessing import (
     preprocess_for_bm25,
     preprocess_for_embedding,
 )
-from import_dou import documents, character_aliases
+from documents import documents, character_aliases
 
 
 chunks = build_chunks()
+
+
 # ---------------------------------
 # Detect comparison questions
 # ---------------------------------
@@ -85,9 +87,6 @@ def build_context(question):
     selected_documents = []
     seen = set()
 
-    # ---------------------------------
-    # Add mentioned characters first
-    # ---------------------------------
     if is_comparison_question(question):
 
         mentioned = find_characters(question)
@@ -99,9 +98,6 @@ def build_context(question):
                 selected_documents.append(doc)
                 seen.add(doc["id"])
 
-    # ---------------------------------
-    # Complete with Hybrid Search results
-    # ---------------------------------
     for row in results:
 
         if row["document_id"] in seen:
@@ -125,9 +121,6 @@ def build_context(question):
     if len(selected_documents) == 0:
         return "", []
 
-    # ---------------------------------
-    # Build Context
-    # ---------------------------------
     context_parts = []
 
     for i, doc in enumerate(selected_documents, start=1):
@@ -144,6 +137,7 @@ def build_context(question):
 
     return context.strip(), selected_documents
 
+
 # ---------------------------------
 # Prepare BM25
 # ---------------------------------
@@ -154,6 +148,7 @@ tokenized_chunks = [
 ]
 
 bm25 = BM25Okapi(tokenized_chunks)
+
 
 # ---------------------------------
 # Normalize Scores
@@ -168,7 +163,10 @@ def min_max_normalize(scores):
     if scores.max() == scores.min():
         return np.zeros_like(scores)
 
-    return (scores - scores.min()) / (scores.max() - scores.min())# ---------------------------------
+    return (scores - scores.min()) / (scores.max() - scores.min())
+
+
+# ---------------------------------
 # Hybrid Search
 # ---------------------------------
 
@@ -177,22 +175,16 @@ ALPHA = 0.7
 
 def hybrid_search(question, k=5):
 
-    # =============================
-    # 1. Vector Search (Chroma)
-    # =============================
-
     query_embedding = model.encode(
         [preprocess_for_embedding(question)],
         convert_to_numpy=True,
         normalize_embeddings=True
     )
 
-
     vector_results = collection.query(
         query_embeddings=query_embedding.tolist(),
         n_results=k
     )
-
 
     vector_scores = {}
 
@@ -200,14 +192,7 @@ def hybrid_search(question, k=5):
         vector_results["ids"][0],
         vector_results["distances"][0]
     ):
-
         vector_scores[chunk_id] = 1 - distance
-
-
-
-    # =============================
-    # 2. BM25 Search
-    # =============================
 
     bm25_query = preprocess_for_bm25(question)
 
@@ -215,54 +200,31 @@ def hybrid_search(question, k=5):
         bm25_query.split()
     )
 
-
     bm25_scores_norm = min_max_normalize(
         bm25_scores
     )
 
-
     bm25_results = {}
 
     for idx, score in enumerate(bm25_scores_norm):
-
-        bm25_results[
-            chunks[idx]["chunk_id"]
-        ] = score
-
-
-
-    # =============================
-    # 3. Combine Scores
-    # =============================
+        bm25_results[chunks[idx]["chunk_id"]] = score
 
     all_ids = set(
         list(vector_scores.keys()) +
         list(bm25_results.keys())
     )
 
-
     final_results = []
-
 
     for chunk_id in all_ids:
 
-        vector_score = vector_scores.get(
-            chunk_id,
-            0
-        )
-
-        bm25_score = bm25_results.get(
-            chunk_id,
-            0
-        )
-
+        vector_score = vector_scores.get(chunk_id, 0)
+        bm25_score = bm25_results.get(chunk_id, 0)
 
         final_score = (
             ALPHA * vector_score
-            +
-            (1 - ALPHA) * bm25_score
+            + (1 - ALPHA) * bm25_score
         )
-
 
         final_results.append(
             {
@@ -271,21 +233,11 @@ def hybrid_search(question, k=5):
             }
         )
 
-
-    # =============================
-    # 4. Sort Results
-    # =============================
-
     final_results = sorted(
         final_results,
         key=lambda x: x["score"],
         reverse=True
     )
-
-
-    # =============================
-    # 5. Add Chunk Data
-    # =============================
 
     output = []
 
@@ -300,6 +252,5 @@ def hybrid_search(question, k=5):
 
                 output.append(item)
                 break
-
 
     return output
