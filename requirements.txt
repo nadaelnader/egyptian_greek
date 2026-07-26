@@ -9,4 +9,4 @@ ollama
 torch
 transformers
 accelerate
-openai
+openai>=1.0.0
