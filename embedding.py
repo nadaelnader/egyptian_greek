@@ -14,7 +14,8 @@ from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-chunks = build_chunks()
+from chunking import build_chunks
+from preprocessing import preprocess_for_bm25, preprocess_for_embeddingchunks = build_chunks()
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
 ALPHA = 0.7
