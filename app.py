@@ -1,6 +1,3 @@
-import base64
-from pathlib import Path
-
 import streamlit as st
 
 from retrieve import build_context, is_comparison_question, find_characters
@@ -10,57 +7,61 @@ from model import ask_model
 # Page Configuration
 # -------------------------
 st.set_page_config(
-    page_title="Nile & Olympus AI",
+    page_title="Egyptian & Greek Mythology AI",
     page_icon="🏛️",
     layout="wide",
 )
 
 # -------------------------
-# Background image (base64)
+# Decorative Greek + Hieroglyph symbols (faint overlay)
 # -------------------------
-BACKGROUND_FILE = "background.jpg"  
+DECORATIVE_SYMBOLS = "𓆣 Ω 𓋹 Δ 𓅓 Θ 𓂀 Λ 𓊪 Σ 𓆓 Φ 𓏏 Ψ 𓎛 Ξ"
 
-
-@st.cache_data
-def get_base64_image(path):
-    file_path = Path(path)
-    if not file_path.exists():
-        return None
-    return base64.b64encode(file_path.read_bytes()).decode()
-
-
-bg_base64 = get_base64_image(BACKGROUND_FILE)
-
-if bg_base64:
-    ext = BACKGROUND_FILE.split(".")[-1]
-    background_css = f"""
+st.markdown(
+    f"""
+    <style>
     .stApp {{
-        background-image:
-            linear-gradient(135deg, rgba(20, 15, 10, 0.82), rgba(15, 20, 28, 0.85)),
-            url("data:image/{ext};base64,{bg_base64}");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-    }}
-    """
-else:
-    background_css = """
-    .stApp {
         background:
             radial-gradient(circle at 15% 20%, rgba(184, 140, 60, 0.25), transparent 45%),
             radial-gradient(circle at 85% 30%, rgba(120, 150, 180, 0.20), transparent 45%),
             linear-gradient(135deg, #1a1410 0%, #241c14 30%, #1c2128 65%, #10151c 100%);
         background-attachment: fixed;
-    }
-    """
+    }}
 
-st.markdown(
-    f"""
-    <style>
-    {background_css}
+    .deco-overlay {{
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+        color: rgba(230, 210, 170, 0.10);
+        font-size: 3.2rem;
+        line-height: 4.5rem;
+        letter-spacing: 1.2rem;
+        word-spacing: 2rem;
+        white-space: pre-wrap;
+        padding: 40px;
+        font-family: "Noto Sans", "Segoe UI Historic", sans-serif;
+    }}
 
-    h1, h2, h3 {{
+    .block-container {{
+        position: relative;
+        z-index: 1;
+    }}
+
+    h1 {{
+        font-family: "Georgia", "Times New Roman", serif !important;
+        color: #e8d5a8 !important;
+        text-shadow: 0 0 14px rgba(0, 0, 0, 0.65);
+        font-size: 3.4rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px;
+    }}
+
+    h2, h3 {{
         font-family: "Georgia", "Times New Roman", serif !important;
         color: #e8d5a8 !important;
         text-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
@@ -108,6 +109,8 @@ st.markdown(
         border-radius: 10px;
     }}
     </style>
+
+    <div class="deco-overlay">{(DECORATIVE_SYMBOLS + "&nbsp;&nbsp;&nbsp;") * 20}</div>
     """,
     unsafe_allow_html=True,
 )
@@ -115,14 +118,14 @@ st.markdown(
 # -------------------------
 # UI
 # -------------------------
-st.title("Nile & Olympus AI")
+st.title("Egyptian & Greek Mythology AI")
 question = st.text_input("Ask about ancient mythology:")
 
 # -------------------------
 # Generate Answer
 # -------------------------
 if question:
-    with st.spinner(" please wait..."):
+    with st.spinner("Searching mythology database..."):
         try:
             context, sources = build_context(question)
 
