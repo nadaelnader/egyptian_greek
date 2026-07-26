@@ -1,5 +1,7 @@
 import streamlit as st
 
+api_key = st.secrets["OPENROUTER_API_KEY"]
+
 st.set_page_config(
     page_title="Egyptian & Greek Mythology AI",
     page_icon="🏛️"
