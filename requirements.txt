@@ -9,4 +9,4 @@ ollama
 torch
 transformers
 accelerate
-openai>=1.0.0
+openpyxl
