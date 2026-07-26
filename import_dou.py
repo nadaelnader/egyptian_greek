@@ -9,32 +9,55 @@ Original file is located at
 ## Import & Documents
 """
 
+import streamlit as st
 import pandas as pd
 
 FILE_PATH = "egyptian_greek_myths_filled.xlsx"
 
-df = pd.read_excel(FILE_PATH)
+REQUIRED_COLUMNS = [
+    "ID", "Name", "Civilization", "Role", "Myth", "Historically Accurate?"
+]
 
-documents = []
 
-for _, row in df.iterrows():
+@st.cache_data
+def load_documents():
+    try:
+        df = pd.read_excel(FILE_PATH)
+    except FileNotFoundError:
+        st.error(
+            f"File '{FILE_PATH}' not found. Make sure it's in the same "
+            f"folder as the project and has been committed and pushed."
+        )
+        st.stop()
 
-    text = f"""
-    Name: {row['Name']}
-    Civilization: {row['Civilization']}
-    Role: {row['Role']}
-    Myth: {row['Myth']}
-    Historically Accurate: {row['Historically Accurate?']}
-    """
+    missing = [col for col in REQUIRED_COLUMNS if col not in df.columns]
+    if missing:
+        st.error(f"Missing columns in the Excel file: {missing}")
+        st.stop()
 
-    documents.append(
-        {
-            "id": str(row["ID"]),
-            "title": row["Name"],
-            "is_current": True,
-            "text": text.strip(),
-        }
-    )
+    rows = []
+    for _, row in df.iterrows():
+        text = f"""
+        Name: {row['Name']}
+        Civilization: {row['Civilization']}
+        Role: {row['Role']}
+        Myth: {row['Myth']}
+        Historically Accurate: {row['Historically Accurate?']}
+        """
+        rows.append(
+            {
+                "id": str(row["ID"]),
+                "title": row["Name"],
+                "is_current": True,
+                "text": text.strip(),
+            }
+        )
+
+    return rows
+
+
+documents = load_documents()
+
 
 if __name__ == "__main__":
     print(f"Loaded {len(documents)} documents.")
