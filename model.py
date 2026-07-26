@@ -9,19 +9,24 @@ Original file is located at
 #Model
 """
 
-import ollama
+from openai import OpenAI
+import streamlit as st
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=st.secrets["OPENROUTER_API_KEY"]
+)
 
 question = "Who tricked death twice?"
 
 context, _ = build_context(question)
-
 prompt = build_prompt(question, context)
 
 print("========== PROMPT ==========")
 print(prompt)
 
-response = ollama.chat(
-    model="qwen2.5:7b",
+response = client.chat.completions.create(
+    model="qwen/qwen-2.5-7b-instruct",
     messages=[
         {
             "role": "system",
@@ -32,26 +37,25 @@ response = ollama.chat(
             "content": prompt
         }
     ],
-    options={
-        "temperature": 0,
-        "top_p": 0.1,
-    }
+    temperature=0,
+    top_p=0.1,
 )
 
 print("\n========== MODEL RESPONSE ==========")
-print(response["message"]["content"])
+print(response.choices[0].message.content)
+
+# ====================================================
 
 question = "Who were the parents of Osiris?"
 
 context, _ = build_context(question)
-
 prompt = build_prompt(question, context)
 
 print("========== PROMPT ==========")
 print(prompt)
 
-response = ollama.chat(
-    model="qwen2.5:7b",
+response = client.chat.completions.create(
+    model="qwen/qwen-2.5-7b-instruct",
     messages=[
         {
             "role": "system",
@@ -62,11 +66,9 @@ response = ollama.chat(
             "content": prompt
         }
     ],
-    options={
-        "temperature": 0,
-        "top_p": 0.1,
-    }
+    temperature=0,
+    top_p=0.1,
 )
 
 print("\n========== MODEL RESPONSE ==========")
-print(response["message"]["content"])
+print(response.choices[0].message.content)
