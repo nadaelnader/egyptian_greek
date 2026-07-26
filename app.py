@@ -62,6 +62,22 @@ st.markdown(
         text-align: center !important;
     }}
 
+    .tagline {{
+        text-align: center;
+        color: #ffffff;
+        font-family: "Georgia", "Times New Roman", serif;
+        font-size: 1.15rem;
+        font-style: italic;
+        letter-spacing: 0.5px;
+        margin-top: -10px;
+        margin-bottom: 25px;
+        text-shadow:
+            0 0 8px rgba(255, 255, 255, 0.75),
+            0 0 18px rgba(255, 255, 255, 0.45),
+            0 0 30px rgba(212, 175, 90, 0.65),
+            0 0 45px rgba(184, 140, 60, 0.45);
+    }}
+
     h2, h3 {{
         font-family: "Georgia", "Times New Roman", serif !important;
         color: #e8d5a8 !important;
@@ -116,6 +132,16 @@ st.markdown(
         border: 1px solid rgba(150, 170, 190, 0.3);
         border-radius: 10px;
     }}
+
+    section[data-testid="stSidebar"] {{
+        background: rgba(10, 10, 12, 0.85);
+        border-right: 1px solid rgba(184, 140, 60, 0.3);
+    }}
+
+    section[data-testid="stSidebar"] h2 {{
+        font-size: 1.3rem !important;
+        text-align: left !important;
+    }}
     </style>
 
     <div class="deco-overlay">{(DECORATIVE_SYMBOLS + "&nbsp;&nbsp;&nbsp;") * 20}</div>
@@ -124,19 +150,58 @@ st.markdown(
 )
 
 # -------------------------
+# Session state: question history
+# -------------------------
+if "history" not in st.session_state:
+    st.session_state.history = []  # list of past questions (most recent first)
+
+if "active_question" not in st.session_state:
+    st.session_state.active_question = ""
+
+# -------------------------
+# Sidebar: question history
+# -------------------------
+with st.sidebar:
+    st.header("🕘 Question History")
+
+    if not st.session_state.history:
+        st.caption("No questions asked yet.")
+    else:
+        for i, past_question in enumerate(st.session_state.history):
+            if st.button(past_question, key=f"history_{i}"):
+                st.session_state.active_question = past_question
+
+        if st.button("🗑️ Clear history"):
+            st.session_state.history = []
+            st.session_state.active_question = ""
+            st.rerun()
+
+# -------------------------
 # UI (العنوان وحقل الكتابة في المنتصف)
 # -------------------------
 left, center, right = st.columns([1, 2, 1])
 
 with center:
     st.title("MythosAI")
-    question = st.text_input("Ask me about what you need to know:")
+    st.markdown(
+        '<div class="tagline">Where Ancient Legends Meet Artificial Intelligence</div>',
+        unsafe_allow_html=True,
+    )
+    question = st.text_input(
+        "Ask me about what you need to know:",
+        value=st.session_state.active_question,
+    )
 
 # -------------------------
 # Generate Answer
 # -------------------------
 if question:
-    with st.spinner("Please wait...."):
+
+    if question not in st.session_state.history:
+        st.session_state.history.insert(0, question)
+        st.session_state.history = st.session_state.history[:50]  
+
+    with st.spinner("Please wait..."):
         try:
             context, sources = build_context(question)
 
