@@ -12,8 +12,7 @@ Original file is located at
 import streamlit as st
 import pandas as pd
 
-FILE_PATH = "egyptian_greek_myths_filled.xlsx"
-
+FILE_PATH = "egyptian_greek_myths.xlsx"
 REQUIRED_COLUMNS = [
     "ID", "Name", "Civilization", "Role", "Myth", "Historically Accurate?"
 ]
