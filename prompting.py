@@ -20,9 +20,15 @@ Rules:
 
 **Name:** (character name)
 
+
+
 **Myth:** (the full story/myth as described in the Context — do not shorten it to one word or one line)
 
+
+
 **Historically Accurate:** (Yes/No/Unclear, based only on the Context)
+
+
 
 6. Do not repeat the question.
 7. Do not explain your reasoning outside the structure above.
