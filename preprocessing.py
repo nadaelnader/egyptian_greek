@@ -9,13 +9,13 @@ text-cleaning utilities used for BM25 and embedding-based retrieval.
 import os
 import re
 import string
-
+ 
 import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
+ 
 # ---------------------------------
 # NLTK setup
 # ---------------------------------
@@ -28,10 +28,10 @@ for package in ("punkt", "punkt_tab", "stopwords", "wordnet"):
             nltk.download(package, quiet=True)
         except Exception:
             pass
-
+ 
 lemmatizer = WordNetLemmatizer()
 translator = str.maketrans("", "", string.punctuation)
-
+ 
 # Important words that should never be removed
 protected_words = {
     "not", "no", "nor", "never",
@@ -41,7 +41,7 @@ protected_words = {
     "queen", "myth",
     "historical", "history",
 }
-
+ 
 try:
     stop_words = set(stopwords.words("english"))
 except LookupError:
@@ -50,23 +50,23 @@ except LookupError:
         "of", "to", "in", "for", "with",
         "on", "at", "by", "from",
     }
-
-
+ 
+ 
 def safe_word_tokenize(text):
     try:
         return word_tokenize(text)
     except LookupError:
         return re.findall(r"\b[\w'-]+\b", text)
-
-
+ 
+ 
 def safe_lemmatize(token):
     token = token.lower()
     try:
         return lemmatizer.lemmatize(token)
     except LookupError:
         return token
-
-
+ 
+ 
 # ---------------------------------
 # BM25 Preprocessing
 # ---------------------------------
@@ -91,8 +91,8 @@ def preprocess_for_bm25(text):
     # Lemmatization
     tokens = [safe_lemmatize(token) for token in tokens]
     return " ".join(tokens)
-
-
+ 
+ 
 # ---------------------------------
 # Embedding Preprocessing
 # ---------------------------------
@@ -105,8 +105,8 @@ def preprocess_for_embedding(text):
     # Normalize spaces
     text = re.sub(r"\s+", " ", text).strip()
     return text
-
-
+ 
+ 
 # ---------------------------------
 # Load documents from Excel
 # ---------------------------------
@@ -115,8 +115,8 @@ _DATA_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     "egyptian_greek_myths_filled.xlsx",
 )
-
-
+ 
+ 
 def load_documents(path: str = _DATA_PATH):
     """
     Reads the myths Excel file and returns a list of dicts shaped like:
@@ -128,7 +128,7 @@ def load_documents(path: str = _DATA_PATH):
         }
     """
     df = pd.read_excel(path, sheet_name="Myths")
-
+ 
     docs = []
     for _, row in df.iterrows():
         docs.append(
@@ -143,15 +143,17 @@ def load_documents(path: str = _DATA_PATH):
             }
         )
     return docs
-
-
+ 
+ 
 # Module-level `documents` used by chunking.py / embedding.py
 documents = load_documents()
-
-
+ 
+ 
 if __name__ == "__main__":
     print(f"Loaded {len(documents)} documents")
     print("-" * 80)
     print(documents[0])
     print("-" * 80)
     print(preprocess_for_bm25(documents[0]["text"][:200]))
+ 
+
