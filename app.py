@@ -7,7 +7,7 @@ from model import ask_model
 # Page Configuration
 # -------------------------
 st.set_page_config(
-    page_title="Egyptian & Greek Mythology AI",
+    page_title="MythosAI",
     page_icon="🏛️",
     layout="wide",
 )
@@ -118,14 +118,14 @@ st.markdown(
 # -------------------------
 # UI
 # -------------------------
-st.title("Egyptian & Greek Mythology AI")
-question = st.text_input("Ask about ancient mythology:")
+st.title("MythosAI")
+question = st.text_input("Ask what you need to know...:")
 
 # -------------------------
 # Generate Answer
 # -------------------------
 if question:
-    with st.spinner("Searching mythology database..."):
+    with st.spinner("Exploring ancient myths Please wait....."):
         try:
             context, sources = build_context(question)
 
