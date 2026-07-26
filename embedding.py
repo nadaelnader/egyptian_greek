@@ -15,7 +15,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from chunking import build_chunks
-from preprocessing import preprocess_for_bm25, preprocess_for_embeddingchunks = build_chunks()
+from preprocessing import preprocess_for_bm25,preprocess_for_embeddingchunks 
+chunks = build_chunks()
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
 ALPHA = 0.7
