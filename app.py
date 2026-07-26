@@ -59,6 +59,7 @@ st.markdown(
         font-size: 3.4rem !important;
         font-weight: 800 !important;
         letter-spacing: 1px;
+        text-align: center !important;
     }}
 
     h2, h3 {{
@@ -76,6 +77,13 @@ st.markdown(
         color: #f0e6cf !important;
         border: 1px solid #8a6d3a !important;
         border-radius: 8px !important;
+        text-align: center;
+    }}
+
+    .stTextInput label {{
+        display: flex !important;
+        justify-content: center !important;
+        width: 100%;
     }}
 
     .answer-box {{
@@ -116,16 +124,19 @@ st.markdown(
 )
 
 # -------------------------
-# UI
+# UI (العنوان وحقل الكتابة في المنتصف)
 # -------------------------
-st.title("MythosAI")
-question = st.text_input("Ask what you need to know...:")
+left, center, right = st.columns([1, 2, 1])
+
+with center:
+    st.title("MythosAI")
+    question = st.text_input("Ask me about what you need to know:")
 
 # -------------------------
 # Generate Answer
 # -------------------------
 if question:
-    with st.spinner("Exploring ancient myths Please wait....."):
+    with st.spinner("Please wait...."):
         try:
             context, sources = build_context(question)
 
