@@ -10,7 +10,7 @@ from model import ask_model
 # Page Configuration
 # -------------------------
 st.set_page_config(
-    page_title="Egyptian & Greek Mythology AI",
+    page_title="Nile & Olympus AI",
     page_icon="🏛️",
     layout="wide",
 )
@@ -18,7 +18,7 @@ st.set_page_config(
 # -------------------------
 # Background image (base64)
 # -------------------------
-BACKGROUND_FILE = "background.jpg"  # غيّر الاسم هنا لو رفعت الصورة باسم مختلف (مثلاً background.png)
+BACKGROUND_FILE = "background.jpg"  
 
 
 @st.cache_data
@@ -45,7 +45,6 @@ if bg_base64:
     }}
     """
 else:
-    # fallback: لو الصورة مش موجودة، استخدم نفس الجراديانت القديم
     background_css = """
     .stApp {
         background:
@@ -116,14 +115,14 @@ st.markdown(
 # -------------------------
 # UI
 # -------------------------
-st.title("Egyptian & Greek Mythology AI")
+st.title("Nile & Olympus AI")
 question = st.text_input("Ask about ancient mythology:")
 
 # -------------------------
 # Generate Answer
 # -------------------------
 if question:
-    with st.spinner("Searching mythology database..."):
+    with st.spinner(" please wait..."):
         try:
             context, sources = build_context(question)
 
