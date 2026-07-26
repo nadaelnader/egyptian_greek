@@ -12,7 +12,7 @@ Original file is located at
 from openai import OpenAI
 import streamlit as st
 
-client = openai(
+client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=st.secrets["OPENROUTER_API_KEY"]
 )
