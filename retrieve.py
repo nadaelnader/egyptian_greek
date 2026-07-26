@@ -13,15 +13,17 @@ import re
 import numpy as np
 from rank_bm25 import BM25Okapi
 
-from embedding import model
+from embedding import model, chunk_embeddings
 from chroma_store import collection
-from chunking import chunks
+from chunking import build_chunks
 from preprocessing import (
     preprocess_for_bm25,
     preprocess_for_embedding,
 )
 from import_dou import documents, character_aliases
 
+
+chunks = build_chunks()
 # ---------------------------------
 # Detect comparison questions
 # ---------------------------------
