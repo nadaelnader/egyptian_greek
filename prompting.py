@@ -18,7 +18,7 @@ Rules:
 "I don't have enough information in the provided mythology database."
 5. ALWAYS structure your answer in this EXACT format, with a blank line between each section (do not merge them into one paragraph):
 
-**Name:** (character name)
+Name: (character name)
 
 **Myth:** (the full story/myth as described in the Context, in 2-4 sentences)
 
